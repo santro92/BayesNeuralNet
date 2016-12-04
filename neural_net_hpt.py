@@ -38,12 +38,12 @@ def find_best_model(train_data, train_labels, param_grid):
 
 def train_and_test():
 
-    trainData = pd.read_csv('train.csv')
+    trainData = pd.read_csv('./data/train.csv')
     trainData = trainData.replace(-1, np.nan)
     trainData = trainData.fillna(trainData.mean())
     trainData = trainData.as_matrix()
 
-    trainLabel = pd.read_table('train_labels.txt', header=None)
+    trainLabel = pd.read_table('./data/train_labels.txt', header=None)
     trainLabel = trainLabel.as_matrix()
 
     [x_train, x_val, y_train, y_val] = train_test_split(trainData, trainLabel, test_size=0.30)
