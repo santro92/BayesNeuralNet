@@ -13,8 +13,6 @@ def build_nn(neurons, input_dim, activation, optimizer, errFunc, wd, dropout):
     model = Sequential()
     model.add(Dense(neurons[0], input_dim=input_dim, init='glorot_uniform', W_regularizer=l2(wd), activation=activation[0]))
     model.add(Dropout(dropout))
-    # model.add(Dense(neurons[1], init='glorot_uniform', activation=activation[0]))
-    # model.add(Dropout(dropout))
     model.add(Dense(1, activation=activation[1]))
     model.compile(loss=errFunc, optimizer=optimizer)
     return model
@@ -27,7 +25,7 @@ def z_score_inputs(Inputs, Mean, StdDev):
 
 def find_best_model(train_data, train_labels, param_grid):
     model = KerasRegressor(build_fn=build_nn)
-    regressor = GridSearchCV(model, param_grid, scoring='mean_squared_error', cv=KFold(n=3), n_jobs=1)
+    regressor = GridSearchCV(model, param_grid, scoring='neg_mean_squared_error', cv=10, n_jobs=1)
     reg_results = regressor.fit(train_data, train_labels)
 
     print("Best AUC score: %f" % reg_results.best_score_)
