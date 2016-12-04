@@ -60,6 +60,9 @@ def train_and_test():
     #           shuffle=True,
     #           validation_data=(x_val, y_val))
 
+def main(job_id, params):
+    print params
+    return np.random.randn()
 
 if __name__ == "__main__":
     train_and_test()
