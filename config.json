@@ -9,10 +9,38 @@
             "min"  : 5,
             "max"  : 100
         },
-        "activation" : {
+        "activation1" : {
             "type" : "ENUM",
             "size" : 1,
-            "options":["sigmoid","tanh","relu"]
+            "options":["sigmoid","relu"]
+        },
+        "activation2" : {
+            "type" : "ENUM",
+            "size" : 1,
+            "options":"relu"
+        },
+        "w_init" : {
+            "type" : "ENUM",
+            "size" : 1,
+            "options":["glorot_uniform","glorot_normal"]
+        },
+        "wd" : {
+            "type" : "FLOAT",
+            "size" : 1,
+            "min" : 0,
+            "max" : 0.1
+        },
+        "dropout" : {
+            "type" : "FLOAT",
+            "size" : 1,
+            "min" : 0.25,
+            "max" : 0.75
+        },
+        "nb_epochs" : {
+            "type" : "INT",
+            "size" : 1,
+            "min" : 30,
+            "max" : 100
         }
     }
 }
