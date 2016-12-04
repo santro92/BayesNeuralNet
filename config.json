@@ -17,7 +17,7 @@
         "activation2" : {
             "type" : "ENUM",
             "size" : 1,
-            "options":"relu"
+            "options":["relu"]
         },
         "w_init" : {
             "type" : "ENUM",

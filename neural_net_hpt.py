@@ -9,6 +9,30 @@ from sklearn.metrics import accuracy_score, mean_squared_error
 from keras.wrappers.scikit_learn import KerasRegressor
 from sklearn.cross_validation import train_test_split
 
+def get_params(params):
+    """
+    Values in params are numpy array, we need to get a list out of it
+    :param params:
+    :return: a new dict
+    """
+    parsed_params = {}
+    for k, v in params.iteritems():
+        vv = v
+        if isinstance(v, np.ndarray):
+            vv = v.tolist()
+            if len(vv) == 1:
+                vv = vv[0]
+            if isinstance(v, basestring) and len(v) == 0:
+                vv = None
+        elif isinstance(v, list) and len(v) == 1:
+            vv = vv[0]
+
+        if isinstance(vv, basestring) and len(vv) == 0:
+            vv = None
+
+        parsed_params[k] = vv
+    return parsed_params
+
 
 def build_nn(neurons, input_dim, activation1, activation2, w_init, errFunc, wd, dropout):
     model = Sequential()
@@ -51,9 +75,9 @@ def get_data():
     trainStd = np.array(list(np.std(x_train,axis=0,dtype=np.float32)))
     x_train = z_score_inputs(x_train, trainMean, trainStd)
     x_val = z_score_inputs(x_val, trainMean, trainStd)
-    
+
     return x_train, y_train, x_val, y_val
-    
+
 def ret_params_model(x_train, y_train):
 
     param_grid = {'neurons': [[50],[40],[30],[20]], 'input_dim': [trainData.shape[1]], 'activation': [['tanh','relu']], 'w_init': ['glorot_uniform','glorot_normal'],
@@ -67,7 +91,7 @@ def ret_params_model(x_train, y_train):
     return model
 
 def fit_model_test(params):
-    
+
     x_train, y_train,x_val,y_val = get_data()
     model = build_nn(params['neurons'] , x_train.shape[1], params['activation1'],params['activation2'],params['w_init'],'mse', params['wd'], params['dropout'])
     model.fit(x_train, y_train,
@@ -79,9 +103,10 @@ def fit_model_test(params):
     val_loss = mean_squared_error(y_val, model.predict(x_val))
     print(val_loss)
     return model, val_loss
-    
+
 def main(job_id, params):
     print params
+    params = get_params(params)
     _, val_loss = fit_model_test(params)
     return val_loss
 
