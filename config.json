@@ -1,7 +1,7 @@
 {
     "language"        : "PYTHON",
     "main-file"       : "neural_net_hpt.py",
-    "experiment-name" : "Hyperparameter tuning of Neural Network",
+    "experiment-name" : "Hyperparameter",
     "variables" : {
         "neurons" : {
             "type" : "INT",
