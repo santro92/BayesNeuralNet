@@ -50,8 +50,8 @@ class Weights:
     
     def __init__(self,input_dim = 451, hidden_neurons = 32, output_dim =1):
         # Sets gaussian prior to weight vector
-        self.Wl1 = np.random.normal(0, .1, (input_dim, hidden_neurons))
-        self.Wl2 = np.random.normal(0, .1, (hidden_neurons, output_dim))
+        self.Wl1 = np.random.normal(0, .01, (input_dim, hidden_neurons))
+        self.Wl2 = np.random.normal(0, .01, (hidden_neurons, output_dim))
         
 
 def sigmoid(input, w):
@@ -70,6 +70,12 @@ def predict(w_obj, data_obj):
     y_1 = sigmoid(data_obj.input, w_obj.Wl1)
     y_2 = relu(y_1, w_obj.Wl2)
     return y_2
+    
+def valPredict(w_obj, data_obj):
+    # Give output of one feedforward pass given the network
+    y_1 = sigmoid(data_obj.valInputs, w_obj.Wl1)
+    y_2 = relu(y_1, w_obj.Wl2)
+    return y_2
         
         
 def tau_prior(a, b):
@@ -79,7 +85,7 @@ def tau_prior(a, b):
 def tau_llh(tau, prior_a, prior_b, data_obj, w_obj):
     n = data_obj.input.shape[0]
     a = prior_a + n/2
-    b = prior_b + np.sum((data_obj.target - predict(w_obj, data_obj)),axis = 0)
+    b = prior_b + np.sum((data_obj.target - predict(w_obj, data_obj)**2),axis = 0)/2
     return gamma.logpdf(tau, a = a, scale = 1/b)
     
     
@@ -91,17 +97,17 @@ def obs_llh(w_vec, idx, layer, data_obj, w_obj, tau):
 
     mu = predict(w_obj, data_obj)
     s = np.sqrt(1/tau)
-#     print data_obj.target/np.exp(mu)
-    print data_obj.target.shape
-    print (data_obj.target/np.exp(mu))
+#     print data_obj.target/np.exp(mu)# 
+#     print data_obj.target.shape
+    print lognorm.logpdf(data_obj.target/np.exp(mu), s)
     return lognorm.logpdf(data_obj.target/np.exp(mu), s)
     
     
-def mcmc_fit(data_obj, w_obj, tau, prior_a, prior_b, mcmc_iter = 1000, sigma0=.1):
+def mcmc_fit(data_obj, w_obj, tau, prior_a, prior_b, mcmc_iter = 10, sigma0=.01):
     
     for iter in range(mcmc_iter):
         ct = 0
-        print iter
+        print "MCMC iteration = %d" %iter
         for w_mat in [w_obj.Wl1, w_obj.Wl2]:
             ct+=1 
             for neuron in range(w_mat.shape[0]):
@@ -109,32 +115,37 @@ def mcmc_fit(data_obj, w_obj, tau, prior_a, prior_b, mcmc_iter = 1000, sigma0=.1
 #                 print prior.shape
 #                 print w_mat[neuron,:].shape
                 print "layer = %d" %ct
-                print neuron
-                print w_mat[neuron,:]
+#                 print neuron
+#                 print w_mat[neuron,:]
 #                 print obs_llh(w_mat[neuron,:],neuron, ct, data_obj, w_obj, tau)
-                w_mat[neuron,:], next_llh = elliptical_slice(w_mat[neuron,:],prior,obs_llh,pdf_params=(neuron, ct, data_obj, w_obj, tau),cur_lnpdf=None,angle_range=None)
+                w_mat[neuron,:], next_llh = elliptical_slice(w_mat[neuron,:],prior,obs_llh,pdf_params=(neuron, ct, data_obj, w_obj, tau),cur_lnpdf=None,angle_range=0.001)
+                
 #                 print w_mat[neuron,:]
 #                 print tau
-        tau, llh_val = slice_update(tau, tau_llh, bounds = [0,10],pdf_params=(prior_a, prior_b, data_obj, w_obj))
-        
+        tau, llh_val = slice_update(tau, tau_llh, bounds = [0,3],pdf_params=(prior_a, prior_b, data_obj, w_obj))
+        print next_llh
     return w_obj, tau
         
         
 def main():
 
-    pri_a = 2
-    pri_b = 2
+    pri_a = .2
+    pri_b = .2
     tau = tau_prior(pri_a, pri_b)
     w_obj = Weights()
     data_obj = Data('./data/train.csv','./data/train_labels.txt',0.30);
     data_obj.inputPreprocess();
     
     for i in range(data_obj.input.shape[0]):
+        if i == 0:
+            mcmc_iter = 10
+        else:
+            mcmc_iter = 10
         d_obj = data_obj.select_subset(i,1)
-        w_obj, tau = mcmc_fit(d_obj, w_obj, tau, pri_a, pri_b)
-        
-    val_pred = predict(w_obj, data_obj.valInputs)
-    val_loss = mean_squared_error(data_obj.valTargets,val_pred)
+        w_obj, tau = mcmc_fit(d_obj, w_obj, tau, pri_a, pri_b, mcmc_iter)
+        val_pred = valPredict(w_obj, data_obj)
+        val_loss = mean_squared_error(data_obj.valTargets,val_pred)
+        print "Validation loss for example %d is %f" %(i,val_loss)
     return val_loss
     
 if __name__ == "__main__":
