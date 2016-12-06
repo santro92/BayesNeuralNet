@@ -1,14 +1,16 @@
 from __future__ import division
-import numpy as np
 import pandas as pd
 from scipy.stats import gamma, lognorm
 from elliptical_slice import *
 from slice_update import *
-from sklearn.model_selection import train_test_split
+from sklearn.cross_validation import train_test_split
+from sklearn.metrics import mean_squared_error
+
+
 class Data:
     'Class for data object'
     
-    def __init__(self,trainFile,trainLabelFile,valRatio):
+    def __init__(self, trainFile, trainLabelFile, valRatio):
         self.trainFile = trainFile
         self.trainLabelFile = trainLabelFile
         self.valRatio = valRatio
@@ -132,7 +134,7 @@ def main():
         w_obj, tau = mcmc_fit(d_obj, w_obj, tau, pri_a, pri_b)
         
     val_pred = predict(w_obj, data_obj.valInputs)
-    val_loss = mean_squared_error(data.obj.valTargets,val_pred)
+    val_loss = mean_squared_error(data_obj.valTargets,val_pred)
     return val_loss
     
 if __name__ == "__main__":

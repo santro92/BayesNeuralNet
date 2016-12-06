@@ -3,8 +3,9 @@
 #
 import math
 import numpy
-def elliptical_slice(initial_theta,prior,lnpdf,pdf_params=(),
-                     cur_lnpdf=None,angle_range=None):
+
+
+def elliptical_slice(initial_theta, prior, lnpdf, pdf_params=(), cur_lnpdf=None, angle_range=None):
     """
     NAME:
        elliptical_slice
