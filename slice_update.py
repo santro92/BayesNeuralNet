@@ -10,14 +10,14 @@ def slice_update(cur_value, llh_fn, bounds , pdf_params =(), initial_bracket_wid
     curr_ll = llh_fn(cur_value, *pdf_params)
     jittered_cur_ll = curr_ll + np.log(np.random.rand())
     split_location = np.random.rand()
-    x_l = max([bounds[1], (cur_value - split_location * initial_bracket_width)])
-    x_r = min([bounds[2], (cur_value + (1-split_location) * initial_bracket_width)])
+    x_l = max([bounds[0], (cur_value - split_location * initial_bracket_width)])
+    x_r = min([bounds[1], (cur_value + (1-split_location) * initial_bracket_width)])
 
     # stepping out
-    while llh_fn(x_l, *pdf_params) > jittered_cur_ll and x_l > bounds[1]:
-        x_l = max([bounds[1], (x_l - initial_bracket_width)])
-    while llh_fn(x_r,  *pdf_params) > jittered_cur_ll and x_r < bounds[2]:
-        x_r = min([bounds[2], (x_r + initial_bracket_width)])
+    while llh_fn(x_l, *pdf_params) > jittered_cur_ll and x_l > bounds[0]:
+        x_l = max([bounds[0], (x_l - initial_bracket_width)])
+    while llh_fn(x_r,  *pdf_params) > jittered_cur_ll and x_r < bounds[1]:
+        x_r = min([bounds[1], (x_r + initial_bracket_width)])
 
     new_ll = 0
     new_value = 0
