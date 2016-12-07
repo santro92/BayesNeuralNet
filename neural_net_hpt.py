@@ -1,3 +1,4 @@
+from __future__ import division
 import numpy as np
 import pandas as pd
 from keras.layers import Dense, Dropout
@@ -9,6 +10,7 @@ from sklearn.metrics import accuracy_score, mean_squared_error
 from keras.wrappers.scikit_learn import KerasRegressor
 from sklearn.cross_validation import train_test_split
 
+np.random.seed(seed = 2456)
 def get_params(params):
     """
     Values in params are numpy array, we need to get a list out of it
@@ -78,24 +80,25 @@ def get_data():
 
     return x_train, y_train, x_val, y_val
 
-def ret_params_model(x_train, y_train):
+def ret_params_model(x_train, y_train, x_val, y_val):
 
-    param_grid = {'neurons': [[50],[40],[30],[20]], 'input_dim': [trainData.shape[1]], 'activation': [['tanh','relu']], 'w_init': ['glorot_uniform','glorot_normal'],
-                    'errFunc': ['mse'], 'wd': [0,0.0001,0.001,0.01], 'dropout': [0.25,0.5],'nb_epoch':[20,30,40,50]}
+    param_grid = {'neurons': range(10,101,10), 'input_dim': [x_train.shape[1]], 'activation1': ['sigmoid','relu'], 'activation2': ['relu'], 'w_init': ['glorot_uniform','glorot_normal'],
+                    'errFunc': ['mse'], 'wd': [0,0.0001,0.001,0.01], 'dropout': [x / 100.0 for x in range(25,76,5)],'nb_epoch':range(30,101,10)}
     model = find_best_model(x_train, y_train, param_grid)
-    # model.fit(x_train, y_train,
-#               nb_epoch=500,
-#               batch_size=32,
-#               shuffle=True,
+    model.fit(x_train, y_train,
+              nb_epoch=500,
+              batch_size=32,
+              shuffle=True)
+    val_loss = mean_squared_error(y_val, model.predict(x_val))
 #               validation_data=(x_val, y_val))
-    return model
+    return val_loss
 
 def fit_model_test(params):
 
     x_train, y_train,x_val,y_val = get_data()
     model = build_nn(params['neurons'] , x_train.shape[1], params['activation1'],params['activation2'],params['w_init'],'mse', params['wd'], params['dropout'])
     model.fit(x_train, y_train,
-              nb_epoch=5,
+              nb_epoch=params['nb_epochs'],
               batch_size=32,
               shuffle=True)
 #               validation_data=(x_val, y_val))
@@ -110,8 +113,11 @@ def main(job_id, params):
     _, val_loss = fit_model_test(params)
     return val_loss
 
-# if __name__ == "__main__":
-#     train_and_test()
-#     x,_,_,_ = get_data()
+if __name__ == "__main__": 
+    
+    x_train, y_train, x_val, y_val = get_data()
+    print ret_params_model(x_train, y_train, x_val, y_val)
+
+    # x,_,_,_ = get_data()
 #     param_grid = {'neurons': 20, 'input_dim': x.shape[1], 'activation1': 'tanh','activation2':'relu', 'w_init': 'glorot_normal','errFunc': 'mse', 'wd': 0.01, 'dropout': 0.5,'nb_epoch':20}
 #     fit_model_test(param_grid)
